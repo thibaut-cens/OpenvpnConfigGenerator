@@ -1,11 +1,27 @@
 #!/usr/bin/env python
+from urllib.parse import urlparse
 from jinja2 import Template
+
+
+class Address:
+    adress = None
+    port = 1194
+
+    def __init__(self, string):
+        parsed = urlparse('//{}'.format(string))
+        self.adress = parsed.hostname
+        if parsed.port is not None:
+            self.port = parsed.port
+
 
 if __name__ == "__main__":
     import argparse
     import sys
 
     parser = argparse.ArgumentParser()
+
+    parser.add_argument("--remote", "-r", default="0.0.0.0",
+                        help="Remote address. If no port is specified, use port 1194")
 
     pg_cert = parser.add_argument_group("Certificates")
     pg_cert.add_argument("--dh", default=None, type=argparse.FileType('r'),
@@ -41,4 +57,5 @@ if __name__ == "__main__":
     args.outfile.write(template.render(dh=dh, ca=ca,
                                        tls=tls,
                                        cert=cert,
-                                       key=key))
+                                       key=key,
+                                       remote=Address(args.remote)))
